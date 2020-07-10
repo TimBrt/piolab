@@ -1,0 +1,48 @@
+# NextCLoud with MariaDB/MySQL
+#
+# Access via "http://localhost:80" (or "http://$(docker-machine ip):80" if using docker-machine)
+#
+# During initial NextCLoud setup, select "Storage & database" --> "Configure the database" --> "MySQL/MariaDB"
+# Database user: nextcloud 
+# Database password: nextcloud
+# Database name: ncdb
+# Database host: replace "localhost" with "maria-db" the same name as the data base container name.
+#
+#
+# The reason for the more refined data persistence in the volumes is because if you were to
+# use just the the '/var/www/html' then everytime you would want/need to update/upgrade
+# NextCloud you would have to go into the volume on the host machine and delete 'version.php'
+#
+
+version: '2'
+
+services:
+
+  nextcloud:
+    container_name: nextcloudMDB
+    restart: unless-stopped
+    image: nextcloud
+    ports:
+      - 8085:80
+      - 993:993
+      - 465:465
+      - 587:587
+    volumes:
+      - /containers/cloud/nextcloud/apps:/var/www/html/apps
+      - /containers/cloud/nextcloud/config:/var/www/html/config
+      - /containers/cloud/nextcloud/data:/var/www/html/data
+    depends_on:
+      - db
+
+  db:
+    container_name: maria-db
+    restart: unless-stopped
+    image: mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ncdb
+      MYSQL_USER: nextcloud
+      MYSQL_PASSWORD: nextcloud
+    volumes:
+      - /containers/cloud/mariadb:/var/lib/mysql
+      
